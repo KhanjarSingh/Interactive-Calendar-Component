@@ -1,0 +1,43 @@
+import { HolidayEvent } from '../types';
+
+export const holidays2025_2026: HolidayEvent[] = [
+  // 2025 Holidays (Sample list based on US typical holidays)
+  { date: '2025-01-01', name: 'New Year\'s Day', type: 'national' },
+  { date: '2025-01-20', name: 'Martin Luther King Jr. Day', type: 'national' },
+  { date: '2025-02-14', name: 'Valentine\'s Day', type: 'observance' },
+  { date: '2025-02-17', name: 'Presidents\' Day', type: 'national' },
+  { date: '2025-03-17', name: 'St. Patrick\'s Day', type: 'observance' },
+  { date: '2025-04-20', name: 'Easter Sunday', type: 'observance' },
+  { date: '2025-05-11', name: 'Mother\'s Day', type: 'observance' },
+  { date: '2025-05-26', name: 'Memorial Day', type: 'national' },
+  { date: '2025-06-15', name: 'Father\'s Day', type: 'observance' },
+  { date: '2025-06-19', name: 'Juneteenth', type: 'national' },
+  { date: '2025-07-04', name: 'Independence Day', type: 'national' },
+  { date: '2025-09-01', name: 'Labor Day', type: 'national' },
+  { date: '2025-10-13', name: 'Columbus Day', type: 'national' },
+  { date: '2025-10-31', name: 'Halloween', type: 'observance' },
+  { date: '2025-11-11', name: 'Veterans Day', type: 'national' },
+  { date: '2025-11-27', name: 'Thanksgiving Day', type: 'national' },
+  { date: '2025-12-25', name: 'Christmas Day', type: 'national' },
+  { date: '2025-12-31', name: 'New Year\'s Eve', type: 'observance' },
+
+  // 2026 Holidays
+  { date: '2026-01-01', name: 'New Year\'s Day', type: 'national' },
+  { date: '2026-01-19', name: 'Martin Luther King Jr. Day', type: 'national' },
+  { date: '2026-02-14', name: 'Valentine\'s Day', type: 'observance' },
+  { date: '2026-02-16', name: 'Presidents\' Day', type: 'national' },
+  { date: '2026-03-17', name: 'St. Patrick\'s Day', type: 'observance' },
+  { date: '2026-04-05', name: 'Easter Sunday', type: 'observance' },
+  { date: '2026-05-10', name: 'Mother\'s Day', type: 'observance' },
+  { date: '2026-05-25', name: 'Memorial Day', type: 'national' },
+  { date: '2026-06-19', name: 'Juneteenth', type: 'national' },
+  { date: '2026-06-21', name: 'Father\'s Day', type: 'observance' },
+  { date: '2026-07-04', name: 'Independence Day', type: 'national' },
+  { date: '2026-09-07', name: 'Labor Day', type: 'national' },
+  { date: '2026-10-12', name: 'Columbus Day', type: 'national' },
+  { date: '2026-10-31', name: 'Halloween', type: 'observance' },
+  { date: '2026-11-11', name: 'Veterans Day', type: 'national' },
+  { date: '2026-11-26', name: 'Thanksgiving Day', type: 'national' },
+  { date: '2026-12-25', name: 'Christmas Day', type: 'national' },
+  { date: '2026-12-31', name: 'New Year\'s Eve', type: 'observance' },
+];
