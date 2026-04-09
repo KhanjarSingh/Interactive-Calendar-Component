@@ -302,18 +302,29 @@ function MonthNotesTab({ year, month, averageMood }: { year: number; month: numb
     const monthKey = `${year}-${month}`;
 
     if (allCompleted && !lastCompletedRef.current && triggerMonthRef.current !== monthKey) {
-      // Trigger confetti
-      import('https://esm.sh/canvas-confetti').then(confetti => {
+      // Trigger confetti using a classic script injection to avoid TS/Webpack build errors
+      const runConfetti = () => {
+        const confetti = (window as any).confetti;
+        if (!confetti) return;
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--cal-accent').trim();
         const accentLight = getComputedStyle(document.documentElement).getPropertyValue('--cal-accent-light').trim();
         
-        confetti.default({
+        confetti({
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
           colors: [accent || '#1A9EE2', '#FFFFFF', accentLight || '#DAEEF9']
         });
-      });
+      };
+
+      if (!(window as any).confetti) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+        script.onload = runConfetti;
+        document.head.appendChild(script);
+      } else {
+        runConfetti();
+      }
       triggerMonthRef.current = monthKey;
     }
     
