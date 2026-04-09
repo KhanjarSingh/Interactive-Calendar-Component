@@ -289,7 +289,7 @@ export function DateCell({
 
         {(isStart || isEnd) && (
           <motion.div
-            layoutId="selection-cap"
+            layoutId={isStart ? "selection-start" : "selection-end"}
             className="absolute inset-0 rounded-full bg-[var(--cal-accent)] shadow-md z-0 pointer-events-none"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
