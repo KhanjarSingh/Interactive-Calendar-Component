@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNotes } from './useNotes';
 import { useStoredRangeNotes } from './useStoredRangeNotes';
 import {
@@ -8,14 +8,17 @@ import {
   BookOpen, CalendarDays, Download, BarChart2,
 } from 'lucide-react';
 import { getMonthlyKey, getRangeKey } from './utils/dateHelpers';
-import { format, isSameDay, endOfMonth, eachDayOfInterval, startOfMonth, isWeekend, isSameMonth } from 'date-fns';
+import { format, isSameDay, endOfMonth, eachDayOfInterval, startOfMonth, isWeekend, isSameMonth, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Note } from './types';
+import { Note, StarredDate } from './types';
+import { motion } from 'framer-motion';
 
 interface NotesPanelProps {
   currentYear: number;
   currentMonth: number;
   selection: { start: Date | null; end: Date | null };
+  averageMood: number;
+  starred: Record<string, string>;
 }
 
 // ─── Shared editable note list ─────────────────────────────────────────────────
@@ -122,8 +125,96 @@ function NoteList({
   );
 }
 
+// ─── Monthly Goal Tracker ──────────────────────────────────────────────────────
+function GoalTracker({ year, month, starred }: { year: number; month: number; starred: Record<string, string> }) {
+  const storageKey = `wallcal_goal_${year}-${month}`;
+  const [goal, setGoal] = useState(() => {
+    if (typeof window === 'undefined') return { label: '', target: 10 };
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : { label: '', target: 10 };
+  });
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(goal));
+  }, [goal, storageKey]);
+
+  // Count green (#22c55e) stamps in this month
+  const completedCount = useMemo(() => {
+    let count = 0;
+    for (const dateKey in starred) {
+      if (starred[dateKey] === '#22c55e') {
+        const d = parseISO(dateKey);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }, [starred, year, month]);
+
+  const percentage = Math.round(Math.min((completedCount / goal.target) * 100, 100));
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="bg-white/40 border-b border-yellow-200/40">
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/50 transition-colors"
+      >
+        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Monthly Goal</span>
+        {isExpanded ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
+      </button>
+      
+      {isExpanded && (
+        <div className="px-4 pb-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="relative w-16 h-16 flex-shrink-0">
+            <svg className="w-full h-full -rotate-90">
+              <circle cx="32" cy="32" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="4" />
+              <motion.circle 
+                cx="32" cy="32" r={radius} fill="none" stroke="#22c55e" strokeWidth="4"
+                strokeLinecap="round"
+                initial={{ strokeDashoffset: circumference }}
+                animate={{ strokeDashoffset }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{ strokeDasharray: circumference }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold text-gray-700">{percentage}%</span>
+            </div>
+          </div>
+          
+          <div className="flex-1 flex flex-col gap-1.5">
+            <input 
+              type="text" 
+              placeholder="Set a goal (e.g. Run 20 days)"
+              className="bg-transparent border-none outline-none text-xs font-bold text-gray-700 placeholder-gray-400"
+              value={goal.label}
+              onChange={e => setGoal({ ...goal, label: e.target.value })}
+            />
+            <div className="flex items-center gap-2">
+              <input 
+                type="number" 
+                min="1" max="31"
+                className="w-8 bg-white/60 border border-gray-200 rounded px-1 py-0.5 text-[10px] font-bold text-gray-600"
+                value={goal.target}
+                onChange={e => setGoal({ ...goal, target: parseInt(e.target.value) || 1 })}
+              />
+              <span className="text-[10px] text-gray-400 font-medium">target days</span>
+              <span className="ml-auto text-[10px] font-bold text-green-600">{completedCount} done</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Stats bar ─────────────────────────────────────────────────────────────────
-function StatsBar({ notes, year, month }: { notes: Note[]; year: number; month: number }) {
+function StatsBar({ notes, year, month, averageMood }: { notes: Note[]; year: number; month: number; averageMood: number }) {
   const today = new Date();
   const filled = notes.filter(n => n.text?.trim());
   const completed = filled.filter(n => n.isCompleted);
@@ -161,8 +252,16 @@ function StatsBar({ notes, year, month }: { notes: Note[]; year: number; month: 
         <>
           <span className="text-gray-300">·</span>
           <span className="text-[10px] text-gray-500">
-            <span className="font-bold">{daysLeft}</span> days left
+            <span className="font-bold text-gray-800">{daysLeft}</span> days left
           </span>
+        </>
+      )}
+      {averageMood > 0 && (
+        <>
+          <span className="text-gray-300">·</span>
+          <div className="flex items-center gap-1 bg-amber-50 px-1.5 py-0.5 rounded text-[9px] font-bold text-amber-700 ring-1 ring-amber-200">
+            MOOD: {averageMood}/5
+          </div>
         </>
       )}
     </div>
@@ -186,10 +285,40 @@ function exportNotes(title: string, notes: Note[]) {
 }
 
 // ─── Month notes tab ────────────────────────────────────────────────────────────
-function MonthNotesTab({ year, month }: { year: number; month: number }) {
+function MonthNotesTab({ year, month, averageMood }: { year: number; month: number; averageMood: number }) {
   const storageKey = getMonthlyKey(year, month);
   const { notes, isLoaded, addNote, updateNote, toggleNote, removeNote } = useNotes(storageKey);
   const title = format(new Date(year, month), 'MMMM yyyy') + ' Notes';
+  const lastCompletedRef = useRef<boolean>(false);
+  const triggerMonthRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!isLoaded || notes.length === 0) return;
+    
+    const filled = notes.filter(n => n.text?.trim());
+    if (filled.length === 0) return;
+    
+    const allCompleted = filled.every(n => n.isCompleted);
+    const monthKey = `${year}-${month}`;
+
+    if (allCompleted && !lastCompletedRef.current && triggerMonthRef.current !== monthKey) {
+      // Trigger confetti
+      import('https://esm.sh/canvas-confetti').then(confetti => {
+        const accent = getComputedStyle(document.documentElement).getPropertyValue('--cal-accent').trim();
+        const accentLight = getComputedStyle(document.documentElement).getPropertyValue('--cal-accent-light').trim();
+        
+        confetti.default({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: [accent || '#1A9EE2', '#FFFFFF', accentLight || '#DAEEF9']
+        });
+      });
+      triggerMonthRef.current = monthKey;
+    }
+    
+    lastCompletedRef.current = allCompleted;
+  }, [notes, isLoaded, year, month]);
 
   if (!isLoaded) return <div className="animate-pulse h-40 bg-yellow-50/60 rounded-lg mx-4 mt-4" />;
 
@@ -201,7 +330,7 @@ function MonthNotesTab({ year, month }: { year: number; month: number }) {
         <div className="absolute top-0 bottom-0 left-9 sm:left-11 w-px bg-red-300/60 z-0 pointer-events-none hidden sm:block" />
         <NoteList notes={notes} addNote={addNote} updateNote={updateNote} toggleNote={toggleNote} removeNote={removeNote} />
       </div>
-      <StatsBar notes={notes} year={year} month={month} />
+      <StatsBar notes={notes} year={year} month={month} averageMood={averageMood} />
       <div className="flex justify-end px-4 py-2 border-t border-blue-100/50">
         <button
           onClick={() => exportNotes(title, notes)}
@@ -351,7 +480,7 @@ function ActiveRangeCard({ selection }: { selection: { start: Date; end: Date | 
 }
 
 // ─── Main export ───────────────────────────────────────────────────────────────
-export function NotesPanel({ currentYear, currentMonth, selection }: NotesPanelProps) {
+export function NotesPanel({ currentYear, currentMonth, selection, averageMood, starred }: NotesPanelProps) {
   const hasActiveSelection = !!selection.start;
   const hasCompleteSelection = !!(selection.start && selection.end);
 
@@ -384,6 +513,9 @@ export function NotesPanel({ currentYear, currentMonth, selection }: NotesPanelP
   return (
     <div className="flex flex-col h-full lg:pr-8 pb-8 lg:pb-0 relative">
       <div className="relative bg-[#FEFCE8] border border-yellow-200/60 rounded-xl shadow-[inset_0_0_20px_rgba(0,0,0,0.02)] flex flex-col h-full overflow-hidden">
+        
+        {/* Monthly Goal */}
+        <GoalTracker year={currentYear} month={currentMonth} starred={starred} />
 
         {/* Push Pin */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 w-4 h-4 rounded-full bg-red-400 shadow-[2px_4px_6px_rgba(0,0,0,0.3)] border-2 border-red-500/80 after:content-[''] after:absolute after:-bottom-2 after:left-1.5 after:w-0.5 after:h-2 after:bg-gray-400 after:-z-10" />
@@ -422,7 +554,7 @@ export function NotesPanel({ currentYear, currentMonth, selection }: NotesPanelP
         {/* Body */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           {tab === 'month' ? (
-            <MonthNotesTab year={currentYear} month={currentMonth} />
+            <MonthNotesTab year={currentYear} month={currentMonth} averageMood={averageMood} />
           ) : (
             <>
               {hasActiveSelection && selection.start && (

@@ -3,7 +3,7 @@ import { Palette } from 'lucide-react';
 import { useTheme, THEMES } from './useTheme';
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, compactMode, setCompactMode } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -41,6 +41,16 @@ export function ThemeSwitcher() {
                 <span className="text-sm font-medium text-gray-700">{t.name}</span>
               </button>
             ))}
+            <div className="h-px bg-gray-100 my-1 w-full" />
+            <button
+              onClick={() => setCompactMode(!compactMode)}
+              className="flex items-center justify-between w-full p-2 rounded-lg transition-colors hover:bg-gray-50 mt-1"
+            >
+              <span className="text-sm font-medium text-gray-700">Compact Mobile Mode</span>
+              <div className={`w-8 h-4 rounded-full relative transition-colors ${compactMode ? 'bg-[var(--cal-accent)]' : 'bg-gray-300'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${compactMode ? 'translate-x-4' : ''}`} />
+              </div>
+            </button>
           </div>
         </>
       )}

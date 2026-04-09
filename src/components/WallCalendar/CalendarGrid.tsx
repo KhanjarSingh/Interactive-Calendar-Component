@@ -4,6 +4,8 @@ import { getMonthGrid } from './utils/dateHelpers';
 import { CalendarState, HolidayEvent } from './types';
 import { holidays2025_2026 } from './constants/holidays';
 import { format, isSameMonth, getISOWeek, isToday, isSameWeek, endOfMonth, eachDayOfInterval, startOfMonth, isWeekend } from 'date-fns';
+import { useTheme } from './useTheme';
+import { useMediaQuery } from './useMediaQuery';
 
 interface CalendarGridProps {
   state: CalendarState;
@@ -13,12 +15,26 @@ interface CalendarGridProps {
   onClearHover: () => void;
   getStamp: (dateKey: string) => string | undefined;
   onShiftClick: (d: Date) => void;
+  moods: Record<string, number>;
+  onMoodChange: (d: Date, score: number) => void;
+  recurring: Record<string, any>;
+  addRecurring: (rule: any) => void;
+  removeRecurring: (baseDate: string) => void;
+  setStamp: (dateKey: string, color: string | null) => void;
 }
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-export function CalendarGrid({ state, onDateClick, onDateHover, onClearSelection, onClearHover, getStamp, onShiftClick }: CalendarGridProps) {
+export function CalendarGrid({ 
+  state, onDateClick, onDateHover, onClearSelection, onClearHover, 
+  getStamp, onShiftClick, moods, onMoodChange,
+  recurring, addRecurring, removeRecurring, setStamp
+}: CalendarGridProps) {
   const { currentYear, currentMonth, selectedRange, hoverDate, selectionPhase } = state;
+  const { compactMode } = useTheme();
+  const isMobile = useMediaQuery('(max-width: 640px)');
+  const isCompact = compactMode || isMobile;
+
   const gridDates = getMonthGrid(currentYear, currentMonth);
   const displayMonthDate = new Date(currentYear, currentMonth);
   const today = new Date();
@@ -66,9 +82,9 @@ export function CalendarGrid({ state, onDateClick, onDateHover, onClearSelection
       </div>
 
       {/* Days header — 8 cols: narrow week-num col + 7 day cols */}
-      <div className="grid gap-0 mb-3" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
+      <div className="grid gap-0 mb-3" style={{ gridTemplateColumns: isCompact ? '0px repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}>
         {/* Week col header (blank) */}
-        <div />
+        {!isCompact ? <div /> : <div className="hidden" />}
         {DAYS.map((day, i) => (
           <div
             key={day}
@@ -91,7 +107,7 @@ export function CalendarGrid({ state, onDateClick, onDateHover, onClearSelection
             <div
               key={wi}
               className="grid gap-0 relative"
-              style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}
+              style={{ gridTemplateColumns: isCompact ? '0px repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}
             >
               {/* Today's week highlight */}
               {isTodayInWeek && (
@@ -99,7 +115,7 @@ export function CalendarGrid({ state, onDateClick, onDateHover, onClearSelection
               )}
 
               {/* Week number */}
-              <div className="flex items-start justify-center pt-3 select-none">
+              <div className={`flex items-start justify-center pt-3 select-none ${isCompact ? 'hidden' : ''}`}>
                 <span
                   className={`text-[9px] font-bold ${
                     isTodayInWeek ? 'text-[var(--cal-accent)]' : 'text-gray-300'
@@ -126,6 +142,13 @@ export function CalendarGrid({ state, onDateClick, onDateHover, onClearSelection
                       onClick={onDateClick}
                       onHover={onDateHover}
                       onShiftClick={onShiftClick}
+                      mood={moods[hk]}
+                      onMoodChange={onMoodChange}
+                      recurring={recurring}
+                      onAddRecurring={addRecurring}
+                      onRemoveRecurring={removeRecurring}
+                      onSetStamp={setStamp}
+                      isCompact={isCompact}
                     />
                   </div>
                 );

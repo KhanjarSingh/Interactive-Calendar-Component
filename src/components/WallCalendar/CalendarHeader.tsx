@@ -1,9 +1,10 @@
 import React from 'react';
-import { format, differenceInCalendarDays } from 'date-fns';
+import { format, differenceInCalendarDays, differenceInDays } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SeasonalBanner } from './SeasonalBanner';
 import { holidays2025_2026 } from './constants/holidays';
+import { getUnsplashBanner } from './utils/unsplash';
 
 interface CalendarHeaderProps {
   currentYear: number;
@@ -57,12 +58,54 @@ function getNextHoliday() {
   return { name: next.name, days };
 }
 
+function MoonPhase({ currentYear, currentMonth }: { currentYear: number; currentMonth: number }) {
+  const EPOCH = new Date(2000, 0, 6, 18, 14);
+  const LUNAR_MONTH = 29.53059;
+  
+  // Use the 15th of the month to provide a stable phase for the month view and avoid hydration mismatch
+  const stableDate = new Date(currentYear, currentMonth, 15);
+  const daysSince = (stableDate.getTime() - EPOCH.getTime()) / (24 * 60 * 60 * 1000);
+  const phase = (daysSince % LUNAR_MONTH) / LUNAR_MONTH;
+  const normalizedPhase = phase < 0 ? phase + 1 : phase;
+
+  return (
+    <div className="absolute top-4 left-4 z-40 w-8 h-8 text-white opacity-80 filter drop-shadow-md" title="Moon Phase">
+      <svg viewBox="0 0 100 100" className="w-full h-full fill-current">
+        <circle cx="50" cy="50" r="45" fill="rgba(255,255,255,0.2)" />
+        {normalizedPhase <= 0.5 ? (
+          <path d={`M 50 5 A 45 45 0 1 ${normalizedPhase > 0.25 ? 0 : 1} 50 95 A ${45 * (1 - normalizedPhase * 4)} 45 0 1 ${normalizedPhase > 0.25 ? 1 : 0} 50 5`} fill="white" />
+        ) : (
+          <>
+            <path d={`M 50 5 A 45 45 0 1 ${normalizedPhase > 0.75 ? 1 : 0} 50 95 A ${45 * (1 - (normalizedPhase - 0.5) * 4)} 45 0 1 ${normalizedPhase > 0.75 ? 0 : 1} 50 5`} fill="rgba(255,255,255,0.2)" />
+            <circle cx="50" cy="50" r="45" fill="white" />
+          </>
+        )}
+        {normalizedPhase < 0.06 || normalizedPhase > 0.94 ? <circle cx="50" cy="50" r="45" fill="white" /> : null}
+      </svg>
+    </div>
+  );
+}
+
 export function CalendarHeader({ currentYear, currentMonth, onNext, onPrev, onToday }: CalendarHeaderProps) {
   const stateKey = `${currentYear}-${currentMonth}`;
   const d = new Date(currentYear, currentMonth);
-  const imageUrl = MONTH_IMAGES[currentMonth % 12];
+  const staticFallback = MONTH_IMAGES[currentMonth % 12];
   const gradient = MONTH_GRADIENTS[currentMonth % 12];
   const nextHoliday = getNextHoliday();
+
+  const [bannerUrl, setBannerUrl] = React.useState(staticFallback);
+
+  React.useEffect(() => {
+    let active = true;
+    async function fetchBanner() {
+      const url = await getUnsplashBanner(currentMonth);
+      if (active) setBannerUrl(url);
+    }
+    fetchBanner();
+    return () => { active = false; };
+  }, [currentMonth]);
+
+  const imageUrl = bannerUrl || staticFallback;
 
   return (
     <div className="relative overflow-hidden rounded-t-lg">
@@ -100,6 +143,9 @@ export function CalendarHeader({ currentYear, currentMonth, onNext, onPrev, onTo
             onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }}
           />
         </AnimatePresence>
+
+        {/* Moon Phase Component positioned in the hero banner */}
+        <MoonPhase currentYear={currentYear} currentMonth={currentMonth} />
 
         {/* Today Button */}
         {onToday && (

@@ -92,6 +92,16 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         hoverDate: null,
       };
     }
+    case 'GO_TO_MONTH': {
+      return {
+        ...state,
+        currentYear: action.payload.year,
+        currentMonth: action.payload.month,
+        selectedRange: { start: null, end: null },
+        selectionPhase: 'idle',
+        hoverDate: null,
+      };
+    }
     default:
       return state;
   }

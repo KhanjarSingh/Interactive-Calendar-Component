@@ -42,10 +42,19 @@ export type CalendarAction =
   | { type: 'CLEAR_HOVER' }
   | { type: 'CLICK_DATE'; payload: Date }
   | { type: 'CLEAR_SELECTION' }
-  | { type: 'GO_TO_TODAY' };
+  | { type: 'CLEAR_SELECTION' }
+  | { type: 'GO_TO_TODAY' }
+  | { type: 'GO_TO_MONTH'; payload: { year: number; month: number } };
 
 export interface StarredDate {
   dateKey: string; // 'YYYY-MM-DD'
   color: string;   // hex or tailwind color name
+  label?: string;
+}
+
+export interface RecurringEvent {
+  baseDate: string; // YYYY-MM-DD
+  color: string;
+  frequency: 'weekly' | 'monthly' | 'yearly';
   label?: string;
 }

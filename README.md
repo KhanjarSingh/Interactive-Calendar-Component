@@ -853,16 +853,47 @@ The calendar will automatically display them with the correct visual treatment.
 
 ---
 
-## 12. Responsive Design
+## 12. Responsive & Mobile Design
 
-The layout adapts across three breakpoint tiers using Tailwind's responsive prefixes:
+The layout adapts across three breakpoint tiers using Tailwind's responsive prefixes, creating a distinct mobile app experience for devices `< 1024px`.
 
-| Breakpoint | Trigger | Behaviour changes |
+### Desktop vs Mobile Architecture
+
+| Tier | Trigger | Behaviour |
 |---|---|---|
-| Mobile (base) | < 640 px | Notes panel stacks above the grid; no mini previews; no shortcut hint bar; red margin lines hidden; note Add button un-indented |
-| `sm` | ≥ 640 px | Red legal-pad margin lines appear; hero image taller; note Add button indented |
-| `lg` | ≥ 1024 px | Side-by-side layout (notes 40% left / grid 60% right); mini-month previews visible; keyboard shortcut hint bar visible; hero image at full `320 px` height |
+| Mobile / Tablet | `< 1024 px` | The desktop Notes panel is completely hidden. Instead, a persistent `📝 Notes` pill button is anchored to the bottom. Tapping it opens a smooth **Framer Motion Bottom-Sheet Drawer** (drag-to-dismiss). A **Floating Action Button** (`FAB`) appears in the bottom right, expanding into a radial menu for quick actions (Add Note, Stamp Today, Go Today). |
+| Desktop | `≥ 1024 px` | Side-by-side layout (notes 40% left / grid 60% right); mini-month previews visible in footer; keyboard shortcut hint bar visible. |
 
-The calendar itself is capped at `max-width: 900 px` and horizontally centred with `mx-auto`. On very wide viewports it does not stretch further.
+### Compact Mobile Mode
 
-All interactive targets (date cells, buttons, note inputs) meet minimum 44 × 44 px touch targets on mobile.
+For very narrow screens (`< 640px`) or users who prefer maximum grid space, the app automatically enables "Compact Mode."
+- Hides the week number column (reclaiming 28px).
+- Increases the date font size to 16px.
+- Moves the colour stamp dots to the bottom-right corner to prevent crowding.
+- Abbreviates holiday names to their first word.
+Users can manually toggle Compact Mode on/off across all breakpoints using the Theme Switcher menu.
+
+---
+
+## 13. Advanced Interactions
+
+### Touch Gestures & Overscroll
+
+- **Swipe Navigation**: Horizontally swiping across the main calendar view triggers month navigation with an overlapping spring animation and side-edge gradients.
+- **Pull-to-Refresh**: Overscrolling the vertical page gently pulls down a visual loading indicator behind the calendar, simulating a native mobile app refresh action.
+- Swipe boundaries strictly distinguish between a horizontal page swipe and a vertical Drag-and-Drop selection action.
+
+### Haptic Feedback
+
+Using `navigator.vibrate`, the app produces nuanced physical vibrations on mobile devices that support it:
+- **Navigation (8ms)**: Swiping between months, using the Prev/Next buttons.
+- **Interaction (10ms)**: Tapping a Date cell, checking off a note.
+- **Micro-interactions (5ms)**: Tapping the FAB or expanding the radial menu.
+
+### Moon Phase Engine
+
+An astronomically-accurate phase calculator built on a known new-moon epoch computes the synodic phase of the moon based on the currently displayed month. It renders dynamically in the top-left of the hero banner as a multi-path SVG icon overlaying the seasonal art.
+
+### Global Search indexing
+
+Pressing `⌘K` or `Ctrl+K` opens a global command-palette interface. It immediately indices every single note stored in `localStorage` across all months and date ranges. As you type, it live-filters the notes and jumping to one instantly navigates the calendar to the matching month and opens the relevant tab.

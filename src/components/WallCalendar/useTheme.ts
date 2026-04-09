@@ -10,6 +10,7 @@ export const THEMES: ThemeConfig[] = [
 
 export function useTheme() {
   const [activeTheme, setActiveTheme] = useState<ThemeConfig>(THEMES[0]);
+  const [compactMode, setCompactMode] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -19,6 +20,10 @@ export function useTheme() {
         if (stored) {
           const found = THEMES.find((t) => t.name === stored);
           if (found) setActiveTheme(found);
+        }
+        const storedCompact = localStorage.getItem('wallcal_compact');
+        if (storedCompact === 'true') {
+          setCompactMode(true);
         }
       } catch (e) {}
       setIsHydrated(true);
@@ -33,12 +38,15 @@ export function useTheme() {
     document.documentElement.style.setProperty('--cal-wire', '#9CA3AF');
     try {
       localStorage.setItem('wallcal_theme', activeTheme.name);
+      localStorage.setItem('wallcal_compact', String(compactMode));
     } catch (e) {}
-  }, [activeTheme, isHydrated]);
+  }, [activeTheme, compactMode, isHydrated]);
 
   return {
     theme: activeTheme,
     setTheme: setActiveTheme,
+    compactMode,
+    setCompactMode,
     isHydrated,
   };
 }
