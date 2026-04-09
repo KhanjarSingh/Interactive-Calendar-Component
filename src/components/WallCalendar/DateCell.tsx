@@ -255,10 +255,31 @@ export function DateCell({
         opacity: isDragOver ? 0.8 : 1,
       }}
     >
-      <div className="relative w-8 h-8 flex items-center justify-center translate-y-1">
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {isInRange && !isStart && !isEnd && (
+          <div className="h-8 w-full bg-[var(--cal-accent-light)] absolute top-1" />
+        )}
+        {isPreviewRange && !isInRange && !isStart && !isEnd && (
+          <div className="h-8 w-full bg-[var(--cal-accent-light)]/50 absolute top-1" />
+        )}
+        {isStart && end && !isSameDay(start, end) && (
+          <div className={cn(
+            "h-8 bg-[var(--cal-accent-light)] absolute top-1",
+            isBefore(start, end) ? "left-1/2 right-0" : "right-1/2 left-0"
+          )} />
+        )}
+        {isEnd && start && !isSameDay(start, end) && (
+          <div className={cn(
+            "h-8 bg-[var(--cal-accent-light)] absolute top-1",
+            isAfter(end, start) ? "right-1/2 left-0" : "left-1/2 right-0"
+          )} />
+        )}
+      </div>
+
+      <div className="relative w-8 h-8 flex items-center justify-center translate-y-1 z-10">
         <span
           className={cn(
-            'inline-block select-none leading-none z-10 transition-colors',
+            'inline-block select-none leading-none transition-colors relative z-10',
             isCompact ? 'text-[14px] font-bold' : isStart || isEnd ? 'text-[13px] font-extrabold' : 'text-[13px] font-bold',
             isStart || isEnd ? 'text-white' : !isCurrentMonth ? 'text-gray-300' : 'text-gray-800'
           )}
@@ -274,27 +295,6 @@ export function DateCell({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', bounce: 0.4, duration: 0.4 }}
           />
-        )}
-      </div>
-
-      <div className="absolute inset-0 pointer-events-none z-0">
-        {isInRange && !isStart && !isEnd && (
-          <div className="h-4/5 w-full bg-[var(--cal-accent-light)] my-auto absolute top-1/2 -translate-y-1/2" />
-        )}
-        {isPreviewRange && !isInRange && !isStart && !isEnd && (
-          <div className="h-4/5 w-full bg-[var(--cal-accent-light)]/50 my-auto absolute top-1/2 -translate-y-1/2" />
-        )}
-        {isStart && end && !isSameDay(start, end) && (
-          <div className={cn(
-            "h-4/5 bg-[var(--cal-accent-light)] my-auto absolute top-1/2 -translate-y-1/2",
-            isBefore(start, end) ? "left-1/2 right-0" : "right-1/2 left-0"
-          )} />
-        )}
-        {isEnd && start && !isSameDay(start, end) && (
-          <div className={cn(
-            "h-4/5 bg-[var(--cal-accent-light)] my-auto absolute top-1/2 -translate-y-1/2",
-            isAfter(end, start) ? "right-1/2 left-0" : "left-1/2 right-0"
-          )} />
         )}
       </div>
 
