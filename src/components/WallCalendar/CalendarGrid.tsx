@@ -82,7 +82,7 @@ export function CalendarGrid({
       </div>
 
       {/* Days header — 8 cols: narrow week-num col + 7 day cols */}
-      <div className="grid gap-0 mb-3" style={{ gridTemplateColumns: isCompact ? '0px repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}>
+      <div className="grid gap-0 mb-3" style={{ gridTemplateColumns: isCompact ? 'repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}>
         {/* Week col header (blank) */}
         {!isCompact ? <div /> : <div className="hidden" />}
         {DAYS.map((day, i) => (
@@ -107,7 +107,7 @@ export function CalendarGrid({
             <div
               key={wi}
               className="grid gap-0 relative"
-              style={{ gridTemplateColumns: isCompact ? '0px repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}
+              style={{ gridTemplateColumns: isCompact ? 'repeat(7, 1fr)' : '28px repeat(7, 1fr)' }}
             >
               {/* Today's week highlight */}
               {isTodayInWeek && (

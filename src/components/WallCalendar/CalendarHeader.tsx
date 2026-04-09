@@ -69,7 +69,7 @@ function MoonPhase({ currentYear, currentMonth }: { currentYear: number; current
   const normalizedPhase = phase < 0 ? phase + 1 : phase;
 
   return (
-    <div className="absolute top-4 left-4 z-40 w-8 h-8 text-white opacity-80 filter drop-shadow-md" title="Moon Phase">
+    <div className="absolute top-4 sm:top-[76px] lg:top-[92px] left-4 sm:left-5 lg:left-8 z-40 w-8 h-8 text-white opacity-80 filter drop-shadow-md" title="Moon Phase">
       <svg viewBox="0 0 100 100" className="w-full h-full fill-current">
         <circle cx="50" cy="50" r="45" fill="rgba(255,255,255,0.2)" />
         {normalizedPhase <= 0.5 ? (
@@ -147,11 +147,11 @@ export function CalendarHeader({ currentYear, currentMonth, onNext, onPrev, onTo
         {/* Moon Phase Component positioned in the hero banner */}
         <MoonPhase currentYear={currentYear} currentMonth={currentMonth} />
 
-        {/* Today Button */}
+        {/* Today Button (Desktop only - Mobile uses FAB) */}
         {onToday && (
           <button
             onClick={onToday}
-            className="absolute top-5 left-5 lg:top-8 lg:left-8 z-30 px-5 py-2.5 bg-white/95 backdrop-blur-md hover:bg-white hover:scale-105 active:scale-95 text-[var(--cal-accent)] font-extrabold text-xs lg:text-sm uppercase tracking-wider rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-all focus:outline-none"
+            className="hidden sm:block absolute top-5 left-5 lg:top-8 lg:left-8 z-30 px-5 py-2.5 bg-white/95 backdrop-blur-md hover:bg-white hover:scale-105 active:scale-95 text-[var(--cal-accent)] font-extrabold text-xs lg:text-sm uppercase tracking-wider rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-all focus:outline-none"
           >
             Today
           </button>
@@ -159,10 +159,10 @@ export function CalendarHeader({ currentYear, currentMonth, onNext, onPrev, onTo
 
         {/* Next holiday countdown pill */}
         {nextHoliday && (
-          <div className="absolute top-5 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 bg-black/40 backdrop-blur-md rounded-full flex items-center gap-2 select-none">
-            <span className="text-white/70 text-[10px] font-semibold uppercase tracking-wider">Next holiday</span>
-            <span className="text-white text-[11px] font-bold">{nextHoliday.name}</span>
-            <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+          <div className="absolute top-[68px] sm:top-5 left-1/2 -translate-x-1/2 z-30 px-3 sm:px-4 py-1.5 bg-black/40 backdrop-blur-md rounded-full flex items-center gap-1.5 sm:gap-2 select-none whitespace-nowrap">
+            <span className="hidden sm:inline text-white/70 text-[10px] font-semibold uppercase tracking-wider">Next holiday</span>
+            <span className="text-white text-[11px] font-bold truncate max-w-[120px] sm:max-w-none">{nextHoliday.name}</span>
+            <span className="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full flex-shrink-0">
               {nextHoliday.days === 0 ? 'Today!' : nextHoliday.days === 1 ? 'Tomorrow' : `${nextHoliday.days}d`}
             </span>
           </div>
